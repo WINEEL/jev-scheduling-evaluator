@@ -1,0 +1,65 @@
+[project]
+name = "church-scheduling-backend"
+version = "0.0.1"
+description = "Minimal FastAPI backend foundation for the Church Scheduling App."
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.141,<1",
+    "uvicorn[standard]>=0.52,<1",
+    "sqlalchemy>=2.0,<2.1",
+    "psycopg[binary]>=3.2,<4",
+    "pydantic-settings>=2.6,<3",
+    # CP-SAT, for the scheduling engine (app/scheduling). A runtime
+    # dependency rather than a dev one: the solver is application code.
+    "ortools>=9.12,<10",
+    # -- Google sign-in (Task 76) -----------------------------------------
+    # Authlib does the security-critical parts of OAuth/OIDC that are easy to
+    # get subtly and silently wrong: state and nonce generation and checking,
+    # the code exchange, JWKS fetching, and ID-token signature/issuer/audience
+    # /expiry validation. Written by hand, those are where authentication bugs
+    # come from.
+    "authlib>=1.6,<2",
+    # Authlib's Starlette integration makes its Google calls through httpx2
+    # (its `integrations/httpx_client/_compat.py` imports httpx2 and treats
+    # plain httpx as a deprecated fallback). It was already present as a *dev*
+    # dependency for Starlette's TestClient; sign-in makes it a runtime one, so
+    # it is listed here as well rather than left to arrive by accident.
+    "httpx2>=2.12,<3",
+    # Signs the session cookie, via Starlette's SessionMiddleware.
+    "itsdangerous>=2.2,<3",
+    # -- Schema migrations (Task 80 deployment follow-up) -------------------
+    # A **runtime** dependency, not a dev one, and that is a deliberate
+    # change. The deployed API image is now the thing that migrates the
+    # database: Cloud Build runs `python -m alembic upgrade head` inside the
+    # image it has just built, before that image is given traffic, so the
+    # migration scripts are by construction the ones the deployed code expects
+    # (cloudbuild.yaml, step `migrate-database`).
+    #
+    # Installing it here rather than adding a second pip install to the
+    # Dockerfile keeps one statement of what the image contains. It costs a
+    # few megabytes and no start-up time -- nothing imports alembic when the
+    # server runs; the serving entry point is still uvicorn alone.
+    "alembic>=1.16,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9,<10",
+    "httpx2>=2.12,<3",
+    # Reads cloudbuild.yaml in tests/test_deployment_pipeline.py, which is
+    # what keeps the migration step from being dropped by accident.
+    "pyyaml>=6,<7",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: needs a real PostgreSQL database (TEST_DATABASE_URL + CHURCH_SCHEDULING_RUN_PG_INTEGRATION=1); deselect with -m 'not integration'",
+]

@@ -1,0 +1,121 @@
+# AV -- one quarter exported as CSV.
+#
+# EXAMPLE CONFIGURATION. It contains no church data: column positions, role
+# names and token spellings only. The ministry's own file stays under
+# local_data/ and is never committed.
+#
+# Run it:
+#   cd backend
+#   python scripts/validate_ministry_intake.py \
+#       --config scripts/intake_templates/av_quarter_csv.example.toml \
+#       --source ../local_data/historical_av/<quarter>.csv \
+#       --identity ../local_data/historical_av/<identity>.csv \
+#       --qualifications ../local_data/historical_av/<approvals>.csv \
+#       --dry-run
+
+[ministry]
+label = "AV"
+
+[roles]
+# The four positions an AV Sunday staffs, in display order.
+staffing = ["AV Lead", "Soundboard", "Slides", "Video"]
+
+# Recorded by the ministry but NEVER a required position. Shadow is training
+# that rides along with a real assignment; a Sunday without one is not
+# short-staffed, and watching a role is not evidence of being cleared for it.
+recorded_non_staffing = ["Shadow"]
+
+lead_role = "AV Lead"
+
+# Empty on purpose. AV volunteers specialize, and rotating a specialist across
+# Soundboard and Slides would fight how the ministry actually works. An empty
+# list means the preference cannot be switched on by accident.
+variety_roles = []
+
+# UNFILLED. Task 81 established this vocabulary from the workbook with
+# confidence, but "the sheets have always said this" is not the same as the
+# Ministry Head confirming it is the current list. Until both lines below are
+# filled in, the dry run reports the role list as NOT ATTESTED and readiness
+# stays false.
+approved_by = "<the AV Ministry Head's name>"
+approved_on = "<date, as YYYY-MM-DD>"
+
+[roles.aliases]
+# Spellings the AV sheets use, mapped onto the canonical names above. Keys are
+# matched after [normalizers].role_label has run, which strips the position
+# codes and service times the older tabs carry -- so "(AV1)\nSound\nboard\n8:00
+# AM" arrives here as "sound board".
+"lead" = "AV Lead"
+"av lead" = "AV Lead"
+"audiovisual lead" = "AV Lead"
+"sound board" = "Soundboard"
+"sound" = "Soundboard"
+"audio" = "Soundboard"
+"slide" = "Slides"
+"projection" = "Slides"
+"camera" = "Video"
+"training" = "Shadow"
+
+[source]
+format = "csv"
+shape = "date_major_grid"
+# The year a bare "10/4" belongs to. No default: a quarter file that omits the
+# year would otherwise be read against whatever year the machine thinks it is.
+year_hint = 2026
+
+[source.grid]
+header_row = 1
+
+# One row is one Sunday, and the date is the first cell.
+date_column = { index = 0 }
+
+# The availability block. Declared as a range rather than "everything before
+# the roles", because a range is a statement somebody made and can be checked
+# against the sheet.
+volunteer_columns = { mode = "explicit_range", first_index = 1, last_index = 28 }
+
+# The prepared-assignment block, BY POSITION. Position is what makes this work
+# on the older tabs, where the same four columns carry no header text at all --
+# a header-matching config cannot name a column that is not labelled.
+role_columns = [
+  { role = "AV Lead",    index = 30 },
+  { role = "Soundboard", index = 31 },
+  { role = "Slides",     index = 32 },
+  { role = "Video",      index = 33 },
+  # Shadow cells are written "Name (AV - Soundboard)". The qualifier is
+  # dropped so the name can be matched; it is NOT read as a role, because
+  # shadowing a position is not evidence of being cleared to serve it.
+  { role = "Shadow",     index = 34, cell_normalizers = ["drop_trailing_parenthetical"] },
+]
+
+notes_columns = [{ index = 35 }]
+
+ignore_columns = [
+  { index = 29, reason = "blank spacer between the availability and assignment blocks" },
+]
+
+[availability]
+# AV answers in words. These are the tokens the sheets actually contain; a
+# token that is not listed STOPS the run rather than being guessed at.
+available = ["yes", "y", "available"]
+unavailable = ["no", "n", "unavailable", "away"]
+backup = []
+
+# A blank writes no availability row, so the person is NO_RESPONSE and the
+# run's policy decides what that means. The AV sheet states no meaning for an
+# empty cell, and "available" would put somebody on a schedule on the strength
+# of one.
+blank = "no_response"
+
+[normalizers]
+person_display = ["strip", "collapse_whitespace"]
+# Case-folding is the only collapse that is safe without a human: two
+# spellings differing by capitalization alone cannot be two different people.
+person_match_key = ["strip", "collapse_whitespace", "casefold"]
+role_label = [
+  "strip",
+  "strip_position_code",
+  "strip_time_of_day",
+  "collapse_whitespace",
+  "casefold",
+]

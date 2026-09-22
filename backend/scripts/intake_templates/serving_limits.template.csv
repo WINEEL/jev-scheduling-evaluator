@@ -1,0 +1,13 @@
+# SERVING LIMITS -- OPTIONAL. Leave this file empty if there are none.
+#
+# The most times one person may be scheduled in one quarter. Use it only for
+# people who have actually told you a maximum. It is a hard limit, not a
+# preference: the schedule will leave a position open rather than exceed it.
+#
+# Nobody needs a row. Without one, that person simply has no limit, and the
+# schedule still spreads the work evenly across everyone available.
+#
+# This is per ministry and per quarter. It says nothing about how much they
+# serve elsewhere in the church.
+source_name,max_assignments_this_quarter,note
+A. Placeholder,2,asked to serve no more than twice this quarter

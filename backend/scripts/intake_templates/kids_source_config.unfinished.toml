@@ -1,0 +1,83 @@
+# Kids -- DELIBERATELY UNFINISHED. This file does not load, and that is the
+# correct behaviour today.
+#
+# Run it and you get:
+#
+#   REFUSED: roles.staffing is empty. A ministry with no authoritative role
+#   list cannot be read; leave the config unfinished rather than inventing one.
+#
+# WHY IT IS EMPTY
+# Two different spellings of the Kids role list are in circulation from the
+# Task 67 review -- one from a blank template, one transcribed from a
+# screenshot of the master schedule -- and they disagree. Same ministry, same
+# review, two lists. Picking either would be this repository deciding a
+# ministry's structure, and every later answer (the approval matrix has one
+# column per role; the schedule has one line per role) would inherit the
+# choice.
+#
+# So the list stays empty until the Kids Ministry Head fills in
+# role_list.template.csv, and this config refuses to run until it is filled
+# in from that. Failing closed here is worth more than a config that runs.
+#
+# WHAT ELSE IS UNKNOWN, and must not be guessed:
+#   * the availability tokens. Kids answers in three tiers, the third being
+#     roughly "if need be" -- which maps onto the generic BACKUP tier and is
+#     fully supported -- but the exact words the sheet uses have to come from
+#     the sheet, not from memory of a screenshot.
+#   * the column layout. The authoritative master schedule exists as .png
+#     screenshots. A screenshot is not configuration: nothing here reads one,
+#     and the transcription made during the review is not a source of truth.
+#   * which columns belong to Kids at all. The master document carries two
+#     columns belonging to ANOTHER ministry and one curriculum column. Read as
+#     Kids roles they would manufacture both phantom requirements and phantom
+#     qualifications, so they are declared ambiguous below rather than read.
+
+[ministry]
+label = "Kids"
+
+[roles]
+# FILL IN FROM role_list.template.csv, once the Kids Head has returned it.
+# One spelling. Until then this config refuses to load.
+staffing = []
+recorded_non_staffing = []
+approved_by = "<the Kids Ministry Head's name>"
+approved_on = "<date, as YYYY-MM-DD>"
+
+[roles.aliases]
+# Only spellings the Head confirms. Not spellings anybody recognized.
+
+[source]
+# A real export, not a screenshot. CSV or .xlsx, whichever the Head can
+# produce -- both are read the same way.
+format = "csv"
+shape = "date_major_grid"
+year_hint = 2026
+
+[source.grid]
+header_row = 1
+date_column = { index = 0 }
+volunteer_columns = { mode = "between_date_and_roles" }
+
+# FILL IN once the role list exists: one entry per position, by index where
+# the export does not label the column.
+role_columns = []
+
+# The other ministry's columns and the curriculum column go here until
+# somebody says what they are, so that they are refused rather than read.
+ambiguous_columns = [
+  { index = 0, question = "PLACEHOLDER -- replace with the real index of each non-Kids column in the export, and what it holds." },
+]
+
+[availability]
+# FILL IN from the export's own legend. The third tier is the generic BACKUP
+# answer: schedulable, never a blocker, used only when nobody on a plain yes
+# is available.
+available = ["available"]
+unavailable = ["unavailable"]
+backup = ["if need be"]
+blank = "no_response"
+
+[normalizers]
+person_display = ["strip", "collapse_whitespace"]
+person_match_key = ["strip", "collapse_whitespace", "casefold"]
+role_label = ["strip", "collapse_whitespace", "casefold"]

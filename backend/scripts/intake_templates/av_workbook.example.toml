@@ -1,0 +1,135 @@
+# AV -- the multi-year workbook, read one tab at a time.
+#
+# EXAMPLE CONFIGURATION. Column positions, role names and token spellings
+# only; no church data. The workbook itself stays under local_data/.
+#
+#   cd backend
+#   python scripts/validate_ministry_intake.py \
+#       --config scripts/intake_templates/av_workbook.example.toml \
+#       --source ../local_data/historical_av/<workbook>.xlsx \
+#       --tab "2025 Oct-Dec" \
+#       --dry-run
+#
+# WHY THIS FILE IS LONGER THAN THE CSV ONE
+# ----------------------------------------
+# The workbook's quarter tabs are consistent in meaning and inconsistent in
+# layout: the assignment block sits at column 30 in one year, 28 in the next,
+# 25 the year before. That drift is exactly what a detector cannot survive and
+# what a per-tab declaration handles in three lines. A tab with no entry below
+# falls back to [source.grid], and a tab whose real layout differs from the
+# fallback fails closed rather than being read at the wrong offsets.
+
+[ministry]
+label = "AV"
+
+[roles]
+staffing = ["AV Lead", "Soundboard", "Slides", "Video"]
+recorded_non_staffing = ["Shadow"]
+lead_role = "AV Lead"
+variety_roles = []
+
+# UNFILLED -- see av_quarter_csv.example.toml. The role list stays NOT
+# ATTESTED until the AV Head confirms it.
+approved_by = "<the AV Ministry Head's name>"
+approved_on = "<date, as YYYY-MM-DD>"
+
+[roles.aliases]
+"lead" = "AV Lead"
+"av lead" = "AV Lead"
+"audiovisual lead" = "AV Lead"
+"sound board" = "Soundboard"
+"sound" = "Soundboard"
+"audio" = "Soundboard"
+"slide" = "Slides"
+"projection" = "Slides"
+"camera" = "Video"
+"training" = "Shadow"
+
+[source]
+format = "xlsx"
+shape = "date_major_grid"
+year_hint = 2026
+
+# Fallback layout: the most recent quarter tabs.
+[source.grid]
+header_row = 1
+date_column = { index = 0 }
+volunteer_columns = { mode = "explicit_range", first_index = 1, last_index = 28 }
+role_columns = [
+  { role = "AV Lead",    index = 30 },
+  { role = "Soundboard", index = 31 },
+  { role = "Slides",     index = 32 },
+  { role = "Video",      index = 33 },
+  { role = "Shadow",     index = 34, cell_normalizers = ["drop_trailing_parenthetical"] },
+]
+notes_columns = [{ index = 35 }]
+ignore_columns = [
+  { index = 29, reason = "blank spacer between the availability and assignment blocks" },
+]
+
+# -- Tabs whose layout differs ------------------------------------------
+
+[[source.tabs]]
+name = "2026 Apr-Jun"
+[source.tabs.grid]
+header_row = 1
+date_column = { index = 0 }
+volunteer_columns = { mode = "explicit_range", first_index = 1, last_index = 26 }
+role_columns = [
+  { role = "AV Lead",    index = 28 },
+  { role = "Soundboard", index = 29 },
+  { role = "Slides",     index = 30 },
+  { role = "Video",      index = 31 },
+  { role = "Shadow",     index = 32, cell_normalizers = ["drop_trailing_parenthetical"] },
+]
+notes_columns = [{ index = 33 }]
+ignore_columns = [
+  { index = 27, reason = "blank spacer between the availability and assignment blocks" },
+]
+
+[[source.tabs]]
+name = "2025 Oct-Dec"
+[source.tabs.grid]
+header_row = 1
+date_column = { index = 0 }
+volunteer_columns = { mode = "explicit_range", first_index = 1, last_index = 23 }
+role_columns = [
+  { role = "AV Lead",    index = 25 },
+  { role = "Soundboard", index = 26 },
+  { role = "Slides",     index = 27 },
+  { role = "Video",      index = 28 },
+  { role = "Shadow",     index = 30, cell_normalizers = ["drop_trailing_parenthetical"] },
+]
+notes_columns = [{ index = 31 }]
+ignore_columns = [
+  { index = 24, reason = "blank spacer between the availability and assignment blocks" },
+]
+# THE CROSS-MINISTRY COLUMN. It is headed "Setup", and nobody has said whether
+# that names the Setup MINISTRY -- in which case it is cross-ministry
+# commitment data and matters to the church-wide one-ministry-per-Sunday rule
+# -- or an AV-internal setup task, in which case it is a fifth AV position
+# nobody has declared. Those two readings lead to opposite imports, so it is
+# declared ambiguous and blocks readiness until the AV Head defines it.
+#
+# When they answer: either add it to [roles] and give it a role column, or
+# move this entry to ignore_columns with their words as the reason.
+ambiguous_columns = [
+  { index = 29, question = "The 'Setup' column: does it name the Setup MINISTRY (cross-ministry commitment data), or an AV-internal setup task (a fifth AV position)?" },
+]
+
+[availability]
+available = ["yes", "y", "available"]
+unavailable = ["no", "n", "unavailable", "away"]
+backup = []
+blank = "no_response"
+
+[normalizers]
+person_display = ["strip", "collapse_whitespace"]
+person_match_key = ["strip", "collapse_whitespace", "casefold"]
+role_label = [
+  "strip",
+  "strip_position_code",
+  "strip_time_of_day",
+  "collapse_whitespace",
+  "casefold",
+]

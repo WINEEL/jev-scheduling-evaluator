@@ -1,0 +1,1464 @@
+/*
+ * One small global stylesheet. No framework, no design system, no utility
+ * classes -- this is a handful of screens for one church's ministry heads,
+ * and a dependency would outweigh the CSS it replaced.
+ *
+ * Colours are defined once as custom properties. **Light is the unconditional
+ * default** (Task 72 final continuation): a visitor's OS preference no longer
+ * decides this on its own, because a demo shown on a projector or a
+ * borrowed laptop should look the same regardless of whose dark-mode setting
+ * it inherits. `[data-theme="dark"]` on `<html>` -- set by the toggle in the
+ * site header, see `components/ThemeToggle.tsx` and `lib/theme.ts` -- is the
+ * only thing that switches it. Status is never carried by colour alone:
+ * every coloured badge also has a word in it, and every stateful cell keeps
+ * its own text label too.
+ *
+ * **Task 75 puts the pilot church's colours through these same properties**
+ * and nothing else: a bright green accent, a darker green where a white
+ * label has to sit on top of it, charcoal text, and white / light neutral
+ * ground. Green is an *accent* here -- actions, active states, status and
+ * highlights -- never a field of colour behind a page, because a dense
+ * scheduling matrix on a green page is unreadable and a church admin tool is
+ * not a marketing site.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces, lightest to most emphasized. `--surface-2` is the secondary
+     surface: table header rows, hovered rows, the Save-changes bar, anything
+     that needs to sit a shade apart from an ordinary card without becoming
+     its own bordered box. Neutral, deliberately: the green belongs on the
+     things you act on, not underneath everything. */
+  --page: #f6f7f5;
+  --header-bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #eef0ed;
+  --border: #e1e3df;
+  --border-strong: #c3c7c1;
+  --text: #2e2e2e;
+  --text-muted: #4b4b4b;
+
+  /* The brand accent, in two strengths.
+     `--accent` is the darker green: it carries text and white-on-green
+     labels, where the bright green would fail contrast (about 2.5:1 on
+     white -- nowhere near the 4.5:1 body text needs). `--accent-bright` is
+     the bright green, used only where nothing has to be legible *on* it:
+     the header rule, an active edge, a highlight bar. */
+  --accent: #008030;
+  --accent-hover: #006827;
+  --accent-text: #ffffff;
+  --accent-soft: #e8f6ec;
+  --accent-bright: #00be4b;
+  --focus-ring: #008030;
+
+  /* Status. Named `ok` rather than `success` for continuity with the badge
+     and notice classes already built on it (`badge--ok`, `notice--ok`) --
+     same concept, existing name. The `ok` family is tuned to the brand
+     green so a passing check and a primary action read as the same family. */
+  --warning-bg: #fbf1de;
+  --warning-border: #d9ac52;
+  --warning-text: #6b4c12;
+  --danger-bg: #fbeceb;
+  --danger-border: #d99a92;
+  --danger-text: #7d2222;
+  --ok-bg: #e8f6ec;
+  --ok-border: #8ec9a5;
+  --ok-text: #0a5c2a;
+
+  /* Subtler than the status colours above on purpose: these tint whole cells
+     across a dense matrix (availability, the schedule review grid), where
+     the bordered-box colours above would tile into the "heavy, muddy"
+     blocks this continuation exists to fix. The state itself is still named
+     by the cell's own text -- these are the "restrained tint", never the
+     only signal. */
+  --state-available-bg: #eaf4ee;
+  --state-backup-bg: #fbf2e2;
+  --state-unavailable-bg: #faeceb;
+
+  --radius: 8px;
+  --gap: 1rem;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --page: #17181a;
+  --header-bg: #1b1c1f;
+  --surface: #202225;
+  --surface-2: #282a2d;
+  --border: #34373b;
+  --border-strong: #4a4e54;
+  --text: #ececea;
+  --text-muted: #adb1b5;
+
+  /* The greens swap roles in the dark: the darker green is unreadable on a
+     dark surface, so text takes a lightened brand green (about 8:1 on the
+     card surface) and the bright green stays available for edges and rules,
+     where it never has to carry a label. */
+  --accent: #3ad477;
+  --accent-hover: #5fe191;
+  --accent-text: #08210f;
+  --accent-soft: #16301f;
+  --accent-bright: #00be4b;
+  --focus-ring: #3ad477;
+
+  --warning-bg: #33291a;
+  --warning-border: #7a5f2c;
+  --warning-text: #f0d6a2;
+  --danger-bg: #38211f;
+  --danger-border: #7d4744;
+  --danger-text: #f3b9b5;
+  --ok-bg: #16301f;
+  --ok-border: #3f7a55;
+  --ok-text: #a7e2bd;
+
+  /* Desaturated relative to the badge/notice colours above -- a dense grid
+     of these should read as a quiet tint, not a wall of dark red and green. */
+  --state-available-bg: #1e2b24;
+  --state-backup-bg: #2b2718;
+  --state-unavailable-bg: #2b201e;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  line-height: 1.55;
+  background: var(--page);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Every link is the accent green, everywhere -- a link inside a table or a
+   notice used to fall back to the browser's default blue, which is both off
+   the palette and, on a dark surface, close to unreadable. The button-shaped
+   links opt back out below (`.link-button`, `.workflow__link`). */
+a {
+  color: var(--accent);
+}
+
+/* Visible, consistent focus everywhere -- keyboard users need to see where
+   they are, and the browser default disappears against some backgrounds.
+   Three pixels of the accent green: it clears 3:1 against both the page and
+   every surface a focusable control sits on, in both themes. */
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* -- layout ------------------------------------------------------------- */
+
+/* The one place the bright green appears as a field of colour: a 3px rule
+   across the top of every page. Nothing sits on it, so its contrast against
+   white is not a legibility question. */
+.site-header {
+  border-top: 3px solid var(--accent-bright);
+  border-bottom: 1px solid var(--border);
+  background: var(--header-bg);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Wider than the 60rem this started at: every working screen in the product
+   is now a matrix (staffing, availability, the draft schedule), and a wider
+   container is the difference between reading a quarter's schedule and
+   scrolling it sideways. Prose keeps its own narrower `max-width` where it
+   matters, so nothing turns into a 72rem-wide paragraph. */
+.site-header__inner,
+.page {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+}
+
+/* Text branding only. No logo file exists in this repository, and drawing
+   one here would invent a mark nobody approved -- see the Task 75 report. */
+/* Task 77: "My upcoming schedule".
+
+   Grouped by day, because somebody reading their own schedule thinks in
+   Sundays rather than in ministries -- so the date is the heading and the
+   commitments sit under it, however many ministries they span. */
+.my-schedule {
+  margin-bottom: 2rem;
+}
+.page__section-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+}
+.my-schedule__days {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.my-schedule__day {
+  padding: 0.85rem 1rem;
+}
+.my-schedule__date {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem;
+}
+/* Wraps rather than truncating: a role or ministry name the reader cannot
+   finish reading is the one thing this row must never do. */
+.my-schedule__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.6rem;
+  padding: 0.25rem 0;
+}
+.my-schedule__role {
+  font-weight: 600;
+}
+.my-schedule__ministry,
+.my-schedule__event {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Task 76 final pass: the signed-out landing screen.
+
+   Rendered *instead of* the shell, never inside it, so there is no header to
+   sit under and no page padding to inherit -- it owns the viewport and centres
+   one card in it. `min-height: 100dvh` rather than `100vh` because mobile
+   browsers' dynamic toolbars make `vh` taller than the visible area, which
+   would push the card off-centre on exactly the devices most likely to be used
+   for a first sign-in. */
+.landing {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  /* The same token `body` uses, so the landing sits on the app's own ground in
+     both themes rather than inventing a second background colour. */
+  background: var(--page);
+}
+.landing__card {
+  width: 100%;
+  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+  padding: 2rem 1.75rem;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent-bright);
+  border-radius: 10px;
+  background: var(--surface);
+}
+/* Stacked here, unlike the header's inline lockup: this is the one place the
+   church's name is the main thing on screen rather than a wayfinding label. */
+.landing__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0;
+  font-weight: 600;
+}
+.landing__brand .brand__church {
+  font-size: 1.15rem;
+}
+.landing__brand .brand__app {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.landing__note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.landing__notice {
+  width: 100%;
+  text-align: left;
+}
+.landing__action {
+  margin-top: 0.25rem;
+}
+
+/* Task 76: sign-in state and the theme toggle share the header's right side.
+   `flex-shrink: 0` because the brand text to their left is the part that
+   should give way when the viewport is narrow -- it wraps, and these do not. */
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+.auth-status {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+/* The signed-in name truncates rather than pushing the sign-out button off the
+   row: losing the end of a long name is recoverable, losing the way out is not.
+   Hidden below the narrowest breakpoint for the same reason. */
+.auth-status__name {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 16rem;
+}
+.auth-status__action {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.7rem;
+}
+@media (max-width: 30rem) {
+  .auth-status__name {
+    display: none;
+  }
+}
+
+.site-header__title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  min-width: 0;
+}
+
+.site-header__title a {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.55rem;
+}
+
+.site-header__title a:hover .brand__church {
+  text-decoration: underline;
+}
+
+.brand__church {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Separated from the church name by a green divider rather than by a comma:
+   this is the product's name, not part of the church's. */
+.brand__app {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  padding-left: 0.55rem;
+  border-left: 2px solid var(--accent-bright);
+}
+
+.theme-toggle {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+}
+
+.page {
+  padding-top: 1.5rem;
+  padding-bottom: 4rem;
+}
+
+.page__title {
+  font-size: 1.6rem;
+  line-height: 1.25;
+  margin-bottom: 0.35rem;
+}
+
+.page__subtitle {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.section {
+  margin-top: 2rem;
+}
+
+.section__title {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.small {
+  font-size: 0.875rem;
+}
+
+/* -- breadcrumbs -------------------------------------------------------- */
+
+.breadcrumbs {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.breadcrumbs ol {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.breadcrumbs li::after {
+  content: "/";
+  margin-left: 0.4rem;
+  color: var(--text-muted);
+}
+
+.breadcrumbs li:last-child::after {
+  content: "";
+}
+
+.breadcrumbs a {
+  color: var(--accent);
+}
+
+/* -- cards -------------------------------------------------------------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+}
+
+.card + .card {
+  margin-top: 0.85rem;
+}
+
+.card__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.card__title {
+  font-size: 1.05rem;
+}
+
+.card__meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 0.15rem;
+}
+
+.card__actions {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+/* -- badges ------------------------------------------------------------- */
+
+.badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--page);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.badge--ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+  color: var(--ok-text);
+}
+
+.badge--warning {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
+}
+
+.badge--danger {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger-text);
+}
+
+/* The one badge that carries the accent rather than a status colour --
+ * "Draft" on the schedule review page, which is a fact worth noticing but
+ * not a warning or an error. */
+.badge--info {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-size: 0.85rem;
+  padding: 0.2rem 0.65rem;
+}
+
+/* -- buttons ------------------------------------------------------------ */
+
+.button {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.button--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.link-button {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* -- notices ------------------------------------------------------------ */
+
+.notice {
+  border: 1px solid var(--border-strong);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  background: var(--surface);
+}
+
+.notice + .notice,
+.notice + .card,
+.card + .notice {
+  margin-top: 0.85rem;
+}
+
+.notice--info {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.notice--warning {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
+}
+
+.notice--danger {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger-text);
+}
+
+.notice--ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+  color: var(--ok-text);
+}
+
+.notice__title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+/* A quieter notice for something worth saying but not worth the same visual
+ * weight as the page's main content -- "What happens next" on the schedule
+ * review page, next to the schedule matrix it must not compete with. */
+.notice--compact {
+  padding: 0.6rem 0.85rem;
+}
+
+.notice--compact .notice__title {
+  font-size: 0.9rem;
+}
+
+.notice--compact p {
+  font-size: 0.85rem;
+}
+
+.notice--compact p + p {
+  margin-top: 0.3rem;
+}
+
+/* -- summary figures ---------------------------------------------------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.85rem;
+}
+
+/* A figure worth noticing keeps its own left edge rather than a filled box:
+   four tiles in a row, one of them solid red, reads as an error state for the
+   whole summary. The label beside it says which figure it is, so the edge is
+   never the only thing carrying the meaning. */
+.stat--alert {
+  border-left: 3px solid var(--danger-border);
+}
+
+.stat--ok {
+  border-left: 3px solid var(--accent-bright);
+}
+
+.stat__value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat__label {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* -- tables --------------------------------------------------------------
+ * The one large per-event card layout this app started with is gone (Task 72
+ * continuations): staffing, availability and the schedule review page all
+ * now read as a table, dense matrices where that pays off and a plain table
+ * where it does not. `.unfilled` / `.diagnostic` / `.override-reason` below
+ * are shared between the schedule review matrix and (historically) the
+ * per-event table it replaced. */
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 26rem;
+}
+
+caption {
+  text-align: left;
+  padding: 0.6rem 1rem 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+th {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* A row header (an event's date, a person's name) is content, not a label --
+ * it must not inherit the column header's shouting-case treatment above. */
+th[scope="row"] {
+  text-transform: none;
+  color: var(--text);
+}
+
+.unfilled {
+  color: var(--danger-text);
+  font-weight: 600;
+}
+
+.diagnostic {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.override-reason {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 0.15rem;
+}
+
+/* -- forms -------------------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.9rem;
+}
+
+.field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* A checkbox next to a multi-line label (hint text underneath) still wants
+ * the checkbox pinned to the first line, not centred against the whole
+ * block -- opt back into that only where the label carries a hint. */
+.field--inline:has(.field__hint) {
+  align-items: flex-start;
+}
+
+.field label {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.field input[type="number"],
+.field input[type="text"],
+.field select {
+  font: inherit;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  max-width: 14rem;
+}
+
+.field__hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.list-reset {
+  list-style: none;
+}
+
+/* -- compact editable matrices (Task 72 continuations) -------------------- *
+ * Shared by staffing, availability, serving limits and the schedule review
+ * page: a dense table with a sticky first column and a sticky header row, so
+ * a person or event named on row one is still visible after scrolling dozens
+ * of rows or columns away from it. One shared visual language across every
+ * screen that uses it -- the whole point of the final polish pass. */
+
+.matrix-scroll {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  max-height: 34rem;
+}
+
+table.matrix {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: max-content;
+}
+
+table.matrix th,
+table.matrix td {
+  padding: 0.5rem 0.7rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+table.matrix th:last-child,
+table.matrix td:last-child {
+  border-right: none;
+}
+
+table.matrix tbody tr:last-child th,
+table.matrix tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* A restrained hover, not a permanent zebra stripe -- enough to track one row
+ * across a wide matrix while scanning, without colouring every other row all
+ * the time. Row header and data cells share the highlight so the sticky
+ * first column does not look detached from the row it belongs to. */
+table.matrix tbody tr:hover td,
+table.matrix tbody tr:hover th.matrix__row-head {
+  background: var(--surface-2);
+}
+
+table.matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface-2);
+  border-bottom: 2px solid var(--border-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+  vertical-align: bottom;
+}
+
+table.matrix thead th:first-child {
+  left: 0;
+  z-index: 3;
+}
+
+table.matrix .matrix__row-head {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  text-align: left;
+  font-weight: 600;
+  white-space: normal;
+}
+
+.matrix__row-head .matrix__row-sub {
+  display: block;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  margin-top: 0.15rem;
+}
+
+.matrix__col-name {
+  display: block;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.matrix__col-sub {
+  display: block;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  margin-top: 0.15rem;
+}
+
+/* A special event's name, made easy to notice rather than blending in as an
+ * ordinary muted caption -- a small tag, the same visual language as a
+ * badge but quieter, since this is a label on a row/column, not a status.
+ * Declared after `.matrix__row-sub` / `.matrix__col-sub` above so this
+ * modifier's own display/colour win when both classes are combined. */
+.matrix__row-sub--tag,
+.matrix__col-sub--tag {
+  display: inline-block;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 4px;
+  padding: 0.05rem 0.4rem;
+  font-weight: 600;
+}
+
+/* A totals row for the whole period, pinned to the bottom of the scroll box
+   so the figures stay in view while the events above them are scrolled. */
+table.matrix tfoot th,
+table.matrix tfoot td {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: var(--surface-2);
+  border-top: 2px solid var(--border-strong);
+  font-weight: 700;
+}
+
+table.matrix tfoot th.matrix__row-head {
+  z-index: 3;
+  background: var(--surface-2);
+}
+
+.matrix__total-col {
+  text-align: center;
+  font-weight: 700;
+  background: var(--surface-2);
+}
+
+thead th.matrix__total-col {
+  background: var(--surface-2);
+}
+
+/* Not scoped under `table.matrix`: the serving-limits and scheduling-rules
+ * tables share this exact input styling for consistency ("similar input
+ * sizing" across every screen) without needing the sticky/scrolling
+ * machinery a short table has no use for.
+ *
+ * A dirty (edited but not yet saved) cell gets the accent colour rather than
+ * a second badge -- the same "one signal, not two" reasoning as the status
+ * badges above. */
+.matrix__cell-input {
+  width: 3.4rem;
+  padding: 0.35rem 0.3rem;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* Wide enough that "No limit" and "No rule" show in full -- the narrow
+ * shared width above is right for a staffing cell's one or two digits, wrong
+ * for a placeholder word. */
+.matrix__cell-input--wide {
+  width: 7rem;
+}
+
+.matrix__cell-input::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.matrix__cell-input--dirty {
+  border-color: var(--accent);
+  border-width: 2px;
+}
+
+.matrix__cell-input--invalid {
+  border-color: var(--danger-border);
+  border-width: 2px;
+}
+
+.matrix__cell-input:disabled {
+  opacity: 0.5;
+}
+
+.matrix__cell-select {
+  width: 100%;
+  min-width: 7.25rem;
+  padding: 0.35rem 0.3rem;
+  font: inherit;
+  font-size: 0.82rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.matrix__cell-select:disabled {
+  opacity: 0.6;
+}
+
+.matrix__cell-error {
+  display: inline-block;
+  margin-left: 0.3rem;
+  color: var(--danger-text);
+  font-weight: 700;
+}
+
+.matrix-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.matrix-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Its own default border, deliberately overridden below by whichever
+ * `.availability-cell--*` state class is paired with it -- the swatch and
+ * the cells it explains share one definition of what each colour means,
+ * rather than two that could drift apart. Declared *before* those state
+ * rules so the pairing wins the cascade on the shared `border-left`. */
+.matrix-legend__swatch {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 3px;
+  border-left: 3px solid var(--border-strong);
+}
+
+/* A restrained tint plus a small coloured edge -- not the same saturated fill
+ * `badge--ok` / `badge--warning` / `badge--danger` use for a standalone box.
+ * Tiled across ~400 cells (29 people x 14 events), a full-strength fill
+ * reads as a wall of colour; a light tint with a 3px accent edge reads as a
+ * status at a glance and stays calm at that density. The select's own text
+ * is what carries the state for anyone who cannot rely on colour at all. */
+.availability-cell--available {
+  background: var(--state-available-bg);
+  border-left: 3px solid var(--ok-border);
+}
+
+.availability-cell--backup {
+  background: var(--state-backup-bg);
+  border-left: 3px solid var(--warning-border);
+}
+
+.availability-cell--unavailable {
+  background: var(--state-unavailable-bg);
+  border-left: 3px solid var(--danger-border);
+}
+
+.availability-cell--none {
+  background: transparent;
+  border-left: 3px solid transparent;
+}
+
+/* One integrated action bar -- staffing and serving limits' Save-changes
+ * controls, and the schedule review page's "Fill this schedule" controls,
+ * all sit inside this same bordered strip instead of floating loosely above
+ * a table or living in a separate card. */
+.matrix-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.85rem;
+  margin: 0.85rem 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.85rem;
+}
+
+.matrix-toolbar__status {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* -- compact rule table (scheduling rules) -------------------------------- */
+
+table.rule-table th,
+table.rule-table td {
+  padding: 0.7rem 1rem;
+}
+
+table.rule-table th[scope="row"] {
+  font-weight: 600;
+}
+
+table.rule-table thead th {
+  font-size: 0.78rem;
+  background: var(--surface-2);
+}
+
+/* -- schedule review matrix ----------------------------------------------- *
+ * Reuses the same `table.matrix` / `matrix-scroll` / `matrix__row-head`
+ * language as staffing and availability: an event per row, a role per
+ * column, generically derived from this version's own requirements -- see
+ * `lib/scheduleMatrix.ts`. Nothing here names a ministry's roles. */
+
+/* A cell may hold a diagnostic sentence, a role breakdown, or more than one
+ * name (a role that needs several people at once) -- unlike a staffing count
+ * or an availability answer, this content wraps rather than forcing the
+ * column wide enough to hold its longest possible line. Shared by the
+ * schedule matrix and the assignments-by-person table below it. */
+table.matrix--wrap td {
+  white-space: normal;
+}
+
+table.matrix--wrap td:not(.matrix__total-col) {
+  min-width: 8rem;
+}
+
+.schedule-cell__blank {
+  color: var(--text-muted);
+}
+
+.schedule-cell__slot + .schedule-cell__slot {
+  margin-top: 0.2rem;
+}
+
+/* A required position with nobody in it -- the one thing on this whole page
+ * that must stay impossible to miss while scrolling past it. */
+/* A tint plus a coloured edge, the same treatment (and the same reasoning) as
+ * an availability cell. Not scoped to `td` any more, so the legend swatch
+ * above the matrix is coloured by this one definition too. */
+.schedule-cell--unfilled {
+  background: var(--state-unavailable-bg);
+  border-left: 3px solid var(--danger-border);
+}
+
+/* An assigned name is what is being read across a whole quarter, so it
+   carries a little more weight than the tags and diagnostics around it. */
+.schedule-cell__slot {
+  font-weight: 600;
+}
+
+.schedule-cell__slot .override-reason {
+  font-weight: 400;
+}
+
+.issue-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.issue {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.7rem 0.9rem;
+}
+
+.issue__message {
+  margin-top: 0.2rem;
+}
+
+/* -- the page's one centrepiece (Task 75) ---------------------------------- *
+ * The draft schedule matrix answers the question a ministry head actually
+ * came to this screen with -- "what is the schedule?" -- so it gets the one
+ * emphatic frame on the page: a stronger border and a green edge along the
+ * top. Everything else on the review screen (the summary above it, the
+ * per-person table and the checks below it) stays in the ordinary card and
+ * table language, so nothing competes with it. */
+
+.section--feature .section__title {
+  font-size: 1.25rem;
+}
+
+.matrix-scroll--feature {
+  border: 1px solid var(--border-strong);
+  border-top: 3px solid var(--accent-bright);
+  max-height: 44rem;
+}
+
+/* The heading line of a section that carries a badge or a note beside its
+   title, rather than stacking three block elements to say one thing. */
+.section__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.section__heading .section__title {
+  margin-bottom: 0;
+}
+
+.section__note {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* -- the workflow list on a scheduling period (Task 75) -------------------- *
+ * The six links on a period card were a flat row of equal-looking buttons in
+ * no particular order. They are the same six links, ordered as the work is
+ * actually done and numbered so the order is visible rather than implied. */
+
+.workflow {
+  list-style: none;
+  counter-reset: workflow;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.workflow__step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.workflow__step:hover {
+  border-color: var(--accent);
+}
+
+.workflow__number {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workflow__link {
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.workflow__link:hover {
+  text-decoration: underline;
+}
+
+.workflow__hint {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+/* The generate/review step is the outcome of the five above it, so it sits
+   apart from the grid rather than inside it -- a strip with the primary
+   action in it, in the same language as `.matrix-toolbar`. */
+.workflow-finish {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.85rem;
+  margin-top: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-bright);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.workflow-finish__label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* The confirm-before-closing panel is a block, not another control in the
+   row: it takes the full width of the strip rather than being squeezed
+   between the buttons it is asking about. */
+.workflow-finish .notice {
+  flex-basis: 100%;
+}
+
+/* -- rules overview (Task 75) ---------------------------------------------- *
+ * Which rule families this period actually has in force, in one table, ahead
+ * of the detail sections that configure or list them. */
+
+.rule-status {
+  white-space: nowrap;
+}
+
+/* -- pilot status (Task 75) ------------------------------------------------ *
+ * A restrained way to say which ministry's configuration a ministry head has
+ * actually validated, and which are examples still awaiting that. Deliberately
+ * one badge in one list, not a banner on every screen. */
+
+.pilot-note {
+  margin-top: 0.85rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  max-width: 46rem;
+}
+
+
+/* -- people directory and person detail (Task 79) ------------------------ *
+ * Deliberately small. Both screens are built from the table, badge, notice,
+ * field and button classes that already exist above; what follows is only
+ * what genuinely had no equivalent -- a header navigation link, a
+ * definition-list layout for a person's facts, and three small groupings. */
+
+/* The header's one navigation link, shown only to an Admin or a ministry head
+   (`components/SiteHeader.tsx`). Sized and weighted like the sign-out control
+   beside it so the header's right side reads as one row of controls rather
+   than a link that wandered in. */
+.site-header__nav-link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  padding: 0.3rem 0.4rem;
+  border-radius: var(--radius);
+}
+
+.site-header__nav-link:hover {
+  background: var(--surface-2);
+}
+
+/* A table column that exists for its controls and needs no visible heading,
+   but still needs an accessible one -- the header cell is announced and not
+   drawn, rather than left empty for a screen reader to skip over. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Search box and its buttons on one row, wrapping on a narrow screen. The
+   field's own bottom margin is dropped so the row aligns on its baseline. */
+.people-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.people-search .field {
+  margin-bottom: 0;
+}
+
+/* A person's church-wide facts, as label/value pairs rather than a one-row
+   table: there is one person here, and a table of one row is a table
+   pretending to be a list. */
+.person-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.9rem 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.person-facts dt {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.person-facts dd {
+  margin: 0;
+}
+
+/* The recorded-serving headline on a person's page. One number, sized to be
+   read at a glance, with the per-ministry breakdown as a table beneath it --
+   and the sentence above it doing the work of saying what it does and does
+   not mean (Task 79). */
+.serving-total {
+  margin: 0.75rem 0;
+  font-size: 1.05rem;
+}
+
+.serving-total strong {
+  font-size: 1.35rem;
+}
+
+/* The directory's Ministries cell: names separated by a comma-free gap, each
+   able to carry its own "head" badge. A pre-joined string could not, which is
+   why `activeMinistryNames` returns a list and the badge is rendered here. */
+.ministry-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.7rem;
+  align-items: center;
+}
+
+.ministry-list .badge {
+  margin-left: 0.3rem;
+}
+
+/* A section within a section -- sign-in access inside the church-wide panel,
+   and "Add to a ministry" inside the memberships panel. Separated by a rule
+   rather than by another card, because these are parts of their section
+   rather than peers of it. */
+.subsection {
+  margin-top: 1.1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+.subsection__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+/* A membership row's controls. They stack, because a confirmation notice
+   opens in place here and a row of buttons beside an expanded warning reads
+   as a single run-on sentence. */
+.row-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.row-actions .button {
+  font-size: 0.85rem;
+  padding: 0.3rem 0.7rem;
+}
+
+.row-actions .notice {
+  margin: 0;
+}
+
+@media (max-width: 40rem) {
+  .workflow {
+    grid-template-columns: 1fr;
+  }
+
+  .page__title {
+    font-size: 1.35rem;
+  }
+
+  /* A matrix is never collapsed into cards on a narrow screen: a schedule
+     with its rows stacked is not a schedule. It scrolls sideways instead,
+     and the sticky first column keeps the event (or the person) in view
+     while it does. */
+  .matrix-scroll,
+  .matrix-scroll--feature {
+    max-height: 30rem;
+  }
+}
+
+@media (max-width: 40rem) {
+  /* The person-facts grid collapses to one column, and the header's People
+     link keeps its place -- it is navigation, so unlike the signed-in name
+     beside it, it is never the thing that gives way. */
+  .person-facts {
+    grid-template-columns: 1fr;
+  }
+}

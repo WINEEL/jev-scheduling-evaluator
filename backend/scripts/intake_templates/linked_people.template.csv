@@ -1,0 +1,10 @@
+# LINKED PEOPLE -- OPTIONAL. Leave this file empty if there are none.
+#
+# Two people who must not be scheduled on the SAME DATE -- typically a couple
+# or a parent and child who need one of them free. Listing a pair does not
+# reduce how much either serves; it only stops both being used at once.
+#
+# One pair per row, and only pairs you actually need. This file being empty is
+# a perfectly normal answer.
+source_name_a,source_name_b,note
+A. Placeholder,B. Placeholder,"married; one needs to be free each week"

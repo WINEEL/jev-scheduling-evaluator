@@ -1,0 +1,87 @@
+# What must never reach a container image, a build log, or Cloud Build.
+#
+# **This file is a security control, not an optimisation.** Cloud Build uploads
+# the build context to Google before any Dockerfile runs, so anything not
+# excluded here has already left this machine by the time a COPY would have
+# skipped it. The first section is the part that matters; everything after it
+# is ordinary hygiene.
+#
+# Both services build from the repository root (see cloudbuild.yaml), so this
+# one file governs both contexts.
+
+# --- Real, private church data. Never. -----------------------------------
+# Mirrors the /local_data/ rule in .gitignore. Real rosters, real historical
+# schedules, real names. It is git-ignored, which keeps it out of commits --
+# and a build context is a completely separate path off this machine, so it
+# needs excluding again, here.
+local_data/
+historical/
+historical-data/
+reports/
+private-data/
+real-data/
+sample-data/**/*.private.*
+**/*.private.*
+
+# --- Secrets and credentials ----------------------------------------------
+# Every deployed secret arrives from Secret Manager at run time. None is ever
+# built into an image: a container image is not a private place -- anyone who
+# can pull it can read every layer.
+.env
+.env.*
+!.env.example
+!.env.demo.example
+**/.env
+**/.env.*
+**/!.env.example
+*.pem
+*.key
+secrets.*
+*_secret*
+*credentials*
+service-account*.json
+client_secret*.json
+
+# --- Git history ----------------------------------------------------------
+# Excluded deliberately: .git holds every past version of every file, so
+# shipping it would undo any later decision to stop tracking something.
+.git/
+.gitignore
+
+# --- Build output and dependencies, rebuilt inside the image --------------
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# --- Python local state ---------------------------------------------------
+.venv/
+**/.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Local scratch --------------------------------------------------------
+cmds.txt
+.DS_Store
+**/.DS_Store
+*.swp
+*~
+.idea/
+.vscode/
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.dump

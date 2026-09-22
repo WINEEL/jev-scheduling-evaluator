@@ -1,0 +1,24 @@
+# AUTHORITATIVE ROLE LIST -- the positions this ministry staffs.
+#
+# This is the first thing needed, because every other answer is indexed by it:
+# the approval matrix has one column per role, and the schedule has one line
+# per role per service. Until this list is settled, nothing else can be.
+#
+# ONE SPELLING, PLEASE. If a position is called "Pre-School Lead" in one
+# document and "Preschool Lead" in another, pick the one you want to see on
+# the schedule and use it everywhere.
+#
+# staffs_a_position:
+#   yes  a service is short-handed if this position is empty
+#   no   the ministry records it, but a service without one is fine
+#        (for example, a trainee shadowing somebody)
+#
+# is_lead: yes for the one position that leads the team, if there is one.
+#          Leave every row "no" if the ministry has no lead position.
+#
+# approved_by: <your name>
+# approved_on: <date, as YYYY-MM-DD>
+role_name,staffs_a_position,is_lead,notes
+Example Lead,yes,yes,
+Example Position 1,yes,no,
+Example Trainee,no,no,rides along with a real assignment

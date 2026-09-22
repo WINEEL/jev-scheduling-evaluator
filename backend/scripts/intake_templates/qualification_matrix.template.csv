@@ -1,0 +1,25 @@
+# ROLE APPROVAL MATRIX -- who you approve for each position.
+#
+# One row per person, one column per position. Put Y in every cell you
+# approve; leave the rest blank. Blank means "no".
+#
+# THIS IS NOT THE SAME AS WHO HAS SERVED. We can see who has been on past
+# schedules, and we deliberately do not use it: it leaves out everybody you
+# would happily approve who has not had a turn yet, and it includes anybody
+# who was pressed into a slot once when you were short. Only this file counts.
+#
+# List everybody on the roster, including people you approve for nothing --
+# a row of blanks is a real answer, a missing row is not.
+#
+# Replace the role columns below with your ministry's own positions, exactly
+# as they are spelled in the role list.
+#
+# These two lines are what make this the approved list. Until both are filled
+# in, the system treats this file as a draft and will not use it.
+#
+# approved_by: <your name>
+# approved_on: <date, as YYYY-MM-DD>
+source_name,Example Lead,Example Position 1,notes
+A. Placeholder,Y,Y,
+B. Placeholder,,Y,
+C. Placeholder,,,"on the roster, approved for nothing yet"

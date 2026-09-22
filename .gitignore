@@ -1,0 +1,98 @@
+# --- Local scratch / notes ---
+cmds.txt
+
+# --- Environment & secrets ---
+.env
+.env.*
+!.env.example
+# Placeholder-only templates; they carry no host or credential.
+!.env.demo.example
+*.local
+secrets.*
+*.pem
+*.key
+*_secret*
+*credentials*
+service-account*.json
+client_secret*.json
+
+# --- Real / private data (keep only synthetic or anonymized data in the repo) ---
+*.private.*
+/private-data/
+/real-data/
+sample-data/**/*.private.*
+
+# --- Task 43: real historical church/member data & generated reports ---
+# Anything under local_data/ is local-only and MUST NOT be committed:
+#   local_data/historical_setup/  -> real Setup spreadsheets developer drops in
+#   local_data/reports/           -> generated schedule reports containing real names
+/local_data/
+/historical/
+/historical-data/
+/reports/private/
+
+# --- macOS / editor ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+build/
+dist/
+.npm/
+.pnpm-store/
+.yarn/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.installed.cfg
+*.egg
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# --- Test / cache / build output ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+coverage/
+*.log
+cmds.txt
+
+# --- Local database / tool artifacts ---
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+pgdata/
+.direnv/

@@ -1,0 +1,27 @@
+# IDENTITY RECONCILIATION -- one row per person named in the source file.
+#
+# WHY THIS FILE EXISTS
+# One human is one record in the system, and their whole schedule hangs off
+# it. If the same person is entered twice, each copy looks complete and
+# neither shows the other half -- there is no way to notice from inside the
+# app. So nobody is ever matched by their name looking similar to another.
+# You say which record each name is, here, and nothing is assumed.
+#
+# HOW TO FILL IT IN
+#   decision = map_to_existing   this name is somebody already in the system.
+#                                Put their id in canonical_person_id.
+#   decision = create_new        nobody in the system is this person yet.
+#                                Leave canonical_person_id blank.
+#   decision = unresolved        you are not sure. Say why in note.
+#                                The import stays blocked until it is decided,
+#                                which is the correct outcome.
+#
+# existing_ministry is optional and only for the report -- it lets us say
+# "these 6 people also serve in Setup". The id is what actually links them.
+#
+# Leave every row you are unsure about as unresolved. A wrong guess here is
+# much harder to undo than a blank.
+source_name,decision,canonical_person_id,existing_ministry,note
+A. Placeholder,map_to_existing,101,Setup,already serves in Setup
+B. Placeholder,create_new,,,new to the directory
+C. Placeholder,unresolved,,,"listed as a first name only; could be either of two people"
