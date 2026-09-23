@@ -1,0 +1,1009 @@
+/* Styles for the Jev soft-constraint demo.
+ *
+ * One page, so one stylesheet. The palette and the handful of component rules
+ * below (`.card`, `.badge`, `.notice`, `.stat`) come from the volunteer
+ * scheduling system this experiment grew out of, which is why the demo looks
+ * like a piece of an application rather than a slide.
+ *
+ * Light and dark are both driven by `prefers-color-scheme` alone: there is no
+ * toggle, nothing stored in the browser, and no script that has to run before
+ * React exists. A single page with no user accounts does not need a theme
+ * preference of its own.
+ *
+ * Because both themes are live, every colour is a token and no rule states a
+ * colour directly. The one rule that matters: a surface token and a text token
+ * are always chosen as a pair, so a dark card can never inherit the browser's
+ * default black text.
+ */
+
+:root {
+  color-scheme: light;
+
+  --page: #f4f5f3;
+  --surface: #ffffff;
+  --surface-sunken: #f8f9f7;
+  --surface-raised: #ffffff;
+  --border: #e0e2de;
+  --border-strong: #888c85;
+  --text: #1e2022;
+  --text-muted: #56595d;
+  --text-faint: #75797e;
+  --accent: #00702a;
+  --accent-hover: #005a22;
+  --accent-text: #ffffff;
+  --accent-soft: #eef7f0;
+  --accent-line: #b7ddc4;
+  --focus-ring: #00702a;
+  --warning-bg: #fdf4e3;
+  --warning-border: #d9ac52;
+  --warning-text: #6b4c12;
+  --danger-bg: #fdefee;
+  --danger-border: #d99a92;
+  --danger-text: #8a2320;
+  --ok-bg: #eaf6ee;
+  --ok-border: #8ec9a5;
+  --ok-text: #0a5c2a;
+  --shadow: 0 1px 2px rgba(20, 24, 21, 0.05);
+
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --page: #141618;
+    --surface: #1d2023;
+    --surface-sunken: #191c1e;
+    --surface-raised: #24282b;
+    --border: #33373b;
+    --border-strong: #6d7278;
+    --text: #f0f1f2;
+    --text-muted: #b6bbc1;
+    --text-faint: #979da4;
+    --accent: #45d97f;
+    --accent-hover: #6ae59b;
+    --accent-text: #06220f;
+    --accent-soft: #15271c;
+    --accent-line: #2f5a3f;
+    --focus-ring: #45d97f;
+    --warning-bg: #2d2517;
+    --warning-border: #7f6430;
+    --warning-text: #f2dbaa;
+    --danger-bg: #31201e;
+    --danger-border: #7f4a46;
+    --danger-text: #f6bfba;
+    --ok-bg: #15271c;
+    --ok-border: #3f7a55;
+    --ok-text: #a9e6c0;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* -- base ------------------------------------------------------------------
+ * A small reset. Margins are removed so every gap on the page is stated by a
+ * rule below rather than inherited from the user agent, and the sans stack is
+ * set once on `body` so nothing anywhere falls back to a serif default. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  letter-spacing: -0.011em;
+  text-wrap: balance;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+/* Meaning is never carried by colour alone, and never by a focus style the
+   keyboard cannot see. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* -- page frame ----------------------------------------------------------- */
+
+.page {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.75rem 4rem;
+}
+
+.page__title {
+  font-size: 1.95rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.page__subtitle {
+  color: var(--text-muted);
+  font-size: 1.02rem;
+  max-width: 46rem;
+}
+
+.section {
+  margin-top: 2.5rem;
+}
+
+.section__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 1.08rem;
+  font-weight: 650;
+  margin-bottom: 0.85rem;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.small {
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+/* -- card ----------------------------------------------------------------- */
+
+.card {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.35rem;
+  box-shadow: var(--shadow);
+}
+
+.card > * + * {
+  margin-top: 0.85rem;
+}
+
+.card__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.card__meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.card > .card__meta {
+  margin-top: 0.3rem;
+}
+
+/* -- badge ---------------------------------------------------------------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.badge--ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+  color: var(--ok-text);
+}
+
+.badge--warning {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
+}
+
+.badge--danger {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger-text);
+}
+
+.badge--info {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+/* -- button --------------------------------------------------------------- */
+
+.button {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.button--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/* -- notice --------------------------------------------------------------- */
+
+.notice {
+  border: 1px solid var(--border-strong);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  padding: 0.95rem 1.15rem;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.notice > * + * {
+  margin-top: 0.3rem;
+}
+
+.notice--info {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  border-left-color: var(--accent);
+  color: var(--text);
+}
+
+.notice--warning {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
+}
+
+.notice--danger {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger-text);
+}
+
+.notice--ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+  color: var(--ok-text);
+}
+
+/* The tinted notices set their own text colour, so `.muted` inside one would
+   otherwise drop back to the page's grey and lose the tint's contrast. */
+.notice--warning .muted,
+.notice--danger .muted,
+.notice--ok .muted {
+  color: inherit;
+  opacity: 0.82;
+}
+
+.notice__title {
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+/* -- stat ----------------------------------------------------------------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.6rem;
+  list-style: none;
+}
+
+.stat {
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.85rem;
+}
+
+.stat--alert {
+  border-color: var(--warning-border);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.stat__value {
+  font-size: 1.7rem;
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  margin-top: 0.2rem;
+}
+
+.stat--alert .stat__label {
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* -- table ---------------------------------------------------------------- */
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 34rem;
+  font-size: 0.9rem;
+}
+
+caption {
+  text-align: left;
+  padding: 0.75rem 1rem 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+thead th {
+  background: var(--surface-sunken);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--text);
+}
+
+tbody tr:last-child th,
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* -- the demo's own rules -------------------------------------------------
+ * Scoped entirely to `.jev-*`. Everything below builds on the tokens and
+ * components above and adds only what the demo's own argument needs.
+ *
+ * The one idea the styling carries: **the model's panel looks different from
+ * the two deterministic ones.** The accent colour marks probabilistic output
+ * and nothing else on this page, so a reader can tell at a glance which
+ * numbers a machine judged and which ones this repository can prove. */
+
+/* Said first, and never shouted. The disclaimer has to survive every
+   screenshot, which means it has to be readable, not loud: a quiet rule down
+   the left and muted body text carry it without competing with the title. */
+.jev-synthetic {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warning-border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1.75rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.jev-synthetic__label {
+  flex: none;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--warning-text);
+}
+
+.jev-synthetic__label::before {
+  content: "";
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.4rem;
+  border-radius: 999px;
+  background: var(--warning-border);
+  vertical-align: 0.05em;
+}
+
+/* The invented references are the load-bearing words in this line, so they
+   are weighted rather than italicised: italics at 0.85rem read as noise. */
+.jev-synthetic__text em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* -- the three-layer legend ---------------------------------------------- */
+
+.jev-legend {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+/* The arrows are the sentence the row is making — exact, then judged, then
+   exact again — so they are decoration to a screen reader and nothing more. */
+.jev-legend__arrow {
+  align-self: center;
+  color: var(--text-faint);
+  font-size: 1.05rem;
+  line-height: 1;
+  user-select: none;
+}
+
+.jev-layer {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.95rem 1.05rem 1.05rem;
+  box-shadow: var(--shadow);
+}
+
+/* Deterministic layers keep the neutral edge; the model's takes the accent.
+   The row reads left to right as exact -> judged -> exact, which is the
+   sentence the page is making. */
+.jev-layer--model {
+  border-top-color: var(--accent);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.jev-layer__kind {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.jev-layer--model .jev-layer__kind {
+  color: var(--accent);
+}
+
+.jev-layer__owner {
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--text);
+  margin: 0.25rem 0 0.4rem;
+}
+
+.jev-layer__body {
+  color: var(--text-muted);
+}
+
+/* -- scenario picker ------------------------------------------------------ */
+
+.jev-scenarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.6rem;
+}
+
+.jev-scenario {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 0.55rem;
+  row-gap: 0.25rem;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.jev-scenario:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+
+.jev-scenario:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Two signals, not one: the ring and the filled dot both change, so the
+   selection survives a greyscale screenshot and a colour-blind reader. */
+.jev-scenario--selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--accent-soft);
+}
+
+.jev-scenario__dot {
+  grid-row: 1;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: 0.28rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+}
+
+.jev-scenario--selected .jev-scenario__dot {
+  border-color: var(--accent);
+  border-width: 4px;
+  background: var(--surface);
+}
+
+.jev-scenario__name {
+  grid-row: 1;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+
+.jev-scenario__summary {
+  grid-column: 2;
+  grid-row: 2;
+  color: var(--text-muted);
+}
+
+/* -- the deterministic panel --------------------------------------------- */
+
+.jev-facts {
+  font-size: 1.02rem;
+}
+
+.jev-stats {
+  margin-top: 1.1rem;
+}
+
+.jev-people {
+  margin-top: 1.1rem;
+}
+
+.jev-people td,
+.jev-people th[scope="row"] {
+  font-variant-numeric: tabular-nums;
+}
+
+.jev-people th[scope="row"] {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.jev-people tbody tr:hover {
+  background: var(--surface-sunken);
+}
+
+/* Somebody past the maximum they asked for is the fact the ambiguous scenario
+   turns on, so the row says so without the reader hunting for the column. The
+   tint is one signal; the `over` badge in the cell is the other. */
+.jev-row--over th[scope="row"],
+.jev-row--over td {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.jev-row--over th[scope="row"] {
+  box-shadow: inset 3px 0 0 var(--warning-border);
+}
+
+.jev-row--over .muted {
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* The badge's own tint is the row's tint, so inside an over-limit row it
+   would vanish into the background it is meant to stand on. */
+.jev-row--over .badge--warning {
+  background: var(--surface);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
+}
+
+.jev-people tbody tr.jev-row--over:hover th[scope="row"],
+.jev-people tbody tr.jev-row--over:hover td {
+  background: var(--warning-bg);
+}
+
+.jev-note {
+  color: var(--text-muted);
+}
+
+/* -- the evaluate action -------------------------------------------------- */
+
+.jev-run {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 1.15rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+
+.jev-run__hint {
+  flex: 1 1 22rem;
+  color: var(--text-muted);
+}
+
+.jev-run__error {
+  margin-top: 0.9rem;
+}
+
+/* -- the result: what a model judged, then what Python decided ------------ */
+
+/* The two halves of the answer are wrapped together and then visibly split, so
+   a reader arriving at a screenshot can see that one box holds probabilities
+   and the other holds a decision — and that the arrow runs one way. */
+.jev-result {
+  margin-top: 2.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.jev-result__half {
+  padding: 1.35rem 1.45rem 1.5rem;
+}
+
+.jev-result__half--model {
+  background: var(--accent-soft);
+  border-bottom: 1px solid var(--accent-line);
+}
+
+.jev-result__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 1.08rem;
+  font-weight: 650;
+  margin-bottom: 0.3rem;
+}
+
+.jev-result__lead {
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  max-width: 48rem;
+}
+
+/* The hand-off, stated once and spelled out: five probabilities go in, one
+   status comes out, and no model is involved in the second step. */
+.jev-handoff {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1.45rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
+.jev-handoff__arrow {
+  color: var(--text-faint);
+  line-height: 1;
+}
+
+.jev-answers {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.7rem;
+}
+
+.jev-answer {
+  grid-column: span 2;
+}
+
+.jev-answer--noul {
+  grid-column: span 3;
+}
+
+/* The cards sit on the accent ground, so they revert to the surface colour to
+   stay legible -- and the card's own `> * + *` spacing is too airy for a card
+   whose whole job is one number. */
+.jev-answers .card {
+  padding: 0.95rem 1.05rem 1.1rem;
+}
+
+.jev-answers .card > * + * {
+  margin-top: 0.5rem;
+}
+
+.jev-answer__question {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  min-height: 1.9em;
+}
+
+.jev-answer__value {
+  font-size: 2.15rem;
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.jev-answers .card > .jev-answer__value {
+  margin-top: 0.15rem;
+}
+
+.jev-answer__reading {
+  color: var(--text-muted);
+}
+
+.jev-answers .card > .jev-answer__reading {
+  margin-top: 0.15rem;
+}
+
+.jev-answer__confidence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Shown only when the distribution is flat, so it reads as a footnote to the
+   number rather than a second reading of it. */
+.jev-answer__spread {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+/* A bar, not a dial: the quantity is a proportion of a known whole, and the
+   number beside it is always shown, so the bar is a second reading of the
+   same fact rather than the only one. */
+.jev-meter {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.jev-meter__fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+/* -- the policy half ------------------------------------------------------ */
+
+/* The status is the one thing a screenshot has to deliver on its own, so it
+   gets the largest type on the page after the title, a tone, and a word. */
+.jev-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-left-width: 5px;
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+}
+
+.jev-status--ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+  border-left-color: var(--ok-text);
+  color: var(--ok-text);
+}
+
+.jev-status--warning {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  border-left-color: var(--warning-text);
+  color: var(--warning-text);
+}
+
+.jev-status--danger {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  border-left-color: var(--danger-text);
+  color: var(--danger-text);
+}
+
+.jev-status__label {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.jev-status__explanation {
+  flex: 1 1 22rem;
+  font-size: 0.92rem;
+  opacity: 0.92;
+}
+
+.jev-why {
+  margin-top: 0.9rem;
+}
+
+.jev-reasons {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.jev-reasons li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--border-strong);
+}
+
+.jev-reasons__label {
+  font-weight: 600;
+}
+
+/* The bounded code itself, shown beside the sentence: the vocabulary is part
+   of the contract, and a demo that hid it would be showing a prettier system
+   than the one that exists. */
+.jev-reasons__code {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+}
+
+.jev-reasons__threshold {
+  color: var(--text-muted);
+}
+
+/* -- narrower screens ------------------------------------------------------
+ * The page is built for a desktop reading, but nothing above depends on that
+ * width: the three-across rows fold to one column and the arrows go away. */
+
+@media (max-width: 60rem) {
+  .jev-answers {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .jev-answer,
+  .jev-answer--noul {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 52rem) {
+  .page {
+    padding: 1.75rem 1.1rem 3rem;
+  }
+
+  .jev-legend {
+    grid-template-columns: 1fr;
+  }
+
+  .jev-legend__arrow {
+    display: none;
+  }
+
+  .jev-synthetic {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .jev-result__half,
+  .jev-handoff {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
+  }
+}
+
+@media (max-width: 38rem) {
+  .jev-answers {
+    grid-template-columns: 1fr;
+  }
+
+  .page__title {
+    font-size: 1.6rem;
+  }
+}

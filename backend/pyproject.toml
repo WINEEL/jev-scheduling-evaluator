@@ -1,0 +1,44 @@
+[project]
+name = "jev-soft-constraint-evaluator"
+version = "0.1.0"
+description = "Soft-constraint scheduling judgments with TypeSafe's Jev, decided by deterministic Python."
+requires-python = ">=3.11"
+dependencies = [
+    # The HTTP surface: two endpoints over three fixed synthetic scenarios.
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.30,<1",
+    # TypeSafe's Python SDK. Pinned to one minor because the SDK is pre-1.0,
+    # where a minor release may break, and the answer shapes this project
+    # parses (Score levels 0-based, `confidence` on Score but not on Noul) are
+    # exactly the kind of thing such a release moves.
+    "typesafe-sdk>=0.7,<0.8",
+    # Used directly: the API's request and response models, and the SDK's own
+    # question and answer types. It arrives with FastAPI anyway; it is listed
+    # because this project imports it by name rather than merely inheriting it.
+    "pydantic>=2.9,<3",
+]
+
+# There is deliberately no database driver, no ORM, no migration tool, no
+# authentication library and no solver here. This project stores nothing,
+# authenticates nobody and schedules nothing: it evaluates a finished draft
+# that a deterministic engine elsewhere has already produced.
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<10",
+]
+
+# Starlette's TestClient is deliberately absent from that list. The HTTP client
+# it needs (`httpx2`) already arrives as a dependency of `typesafe-sdk`, and
+# naming it here would pin a transport this project does not choose. The suite
+# was run with `httpx` uninstalled to confirm it is genuinely unused.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
