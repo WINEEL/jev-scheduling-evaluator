@@ -366,8 +366,7 @@ function ResultPanel({ evaluation }: { evaluation: JevDemoEvaluation }) {
         <span className="jev-handoff__arrow" aria-hidden="true">
           ↓
         </span>
-        Those five Jev judgments are the only input to the step below. 
-        No model is asked again.
+        Those five Jev judgments are the only input to the step below. No model is asked again.
       </p>
 
       <PolicyPanel evaluation={evaluation} />
